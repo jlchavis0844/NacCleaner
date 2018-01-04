@@ -66,6 +66,7 @@ namespace NacCleaner {
                     lblStatus.Content = lblStatus.Content + "...Done";
                 } else {
                     lblStatus.Content = "Starting NACOLAH Annuity clean";
+
                     new NacAnn(filePath);
                     lblStatus.Content = lblStatus.Content + "...Done";
                 }

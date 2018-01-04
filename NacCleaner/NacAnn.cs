@@ -44,7 +44,6 @@ namespace NacCleaner {
             catch (Exception ex) {
                 MessageBox.Show("Error: " + ex.Message, "Error");
             }
-
             pdfLines.RemoveAll(item => item.StartsWith("3R"));
             pdfLines.RemoveAll(item => item.Trim().StartsWith("Page "));
             pdfLines.RemoveAll(item => item.Length < 1);
@@ -142,12 +141,6 @@ namespace NacCleaner {
             }
 
             commLines.RemoveAll(c => c.comm == 0);
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\testing\outPut.txt")) {
-                foreach (CommLine line in commLines) {
-                    file.WriteLine(line);
-                    Console.WriteLine(line);
-                }
-            }
 
             string pdfTotal = pdfLines.Find(e => e.StartsWith("EFT Amount")).Replace("EFT Amount", "").Replace("$", "").Trim();
             double commTotal = commLines.Sum(e => e.comm);
@@ -155,6 +148,7 @@ namespace NacCleaner {
             if (commTotal != Convert.ToDouble(pdfTotal)) {
                 MessageBox.Show("Warning, PDF total doesn't match commission total", "WARNING: TOTALS DON'T MATCH", MessageBoxButtons.OK);
             }
+            
             CheckIssueDates();
             writeToExcel();
         }
@@ -228,7 +222,7 @@ namespace NacCleaner {
         public static string GetSavePath() {
 
             SaveFileDialog saveFileDialog1 = new SaveFileDialog();
-            saveFileDialog1.InitialDirectory = "H:\\Desktop\\";
+            //saveFileDialog1.InitialDirectory = "H:\\Desktop\\";
             saveFileDialog1.Filter = "xls|*.xls";
             saveFileDialog1.FilterIndex = 2;
             saveFileDialog1.RestoreDirectory = true;
