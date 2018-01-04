@@ -2,6 +2,7 @@
 using iTextSharp.text.pdf.parser;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -129,7 +130,8 @@ namespace NacCleaner {
                         annuals.Add(e);
                     }
                 }
-
+                entries.RemoveAll(entry => entry.getCommissionTotal() == 0);//remove zeros
+                CheckIssueDates();
                 writeToExcel();
             }
             catch (Exception e) {
@@ -257,8 +259,6 @@ namespace NacCleaner {
                 oSheet.get_Range("A1", "I1").VerticalAlignment =
                     Microsoft.Office.Interop.Excel.XlVAlign.xlVAlignCenter;
 
-                entries.RemoveAll(entry => entry.getCommissionTotal() == 0);//remove zeros
-
                 for (int i = 0; i < entries.Count; i++) {
                     object[] outPut = entries[i].getOutput();
                     oSheet.get_Range("A" + (i + 2), "I" + (i + 2)).Value2 = outPut;
@@ -310,6 +310,52 @@ namespace NacCleaner {
             }
             //else System.Windows.Application.Exit();
             return "";
+        }
+
+        public static int CheckIssueDates() {
+            int cnt = 0;
+            SqlConnection cs = new SqlConnection("Data Source=RALIMSQL1\\RALIM1; " +
+                "Initial Catalog = CAMSRALFG; " +
+                "Integrated Security = SSPI; " +
+                "Persist Security Info = false; " +
+                "Trusted_Connection = Yes");
+            SqlCommand cmd = new SqlCommand();
+            SqlDataReader reader;
+            string currPol = "";
+
+            foreach (Entry entry in entries) {
+                if (entry.getIssueDate() == null || entry.getIssueDate() == "") {
+                    currPol = entry.getPolicyNum().ToString();
+                    string query = @"SELECT Convert(varchar(10),MIN(Sales.IssueDate),101) FROM Sales WHERE Sales.[Policy#]='" + currPol + "';";
+
+                    try {
+                        cmd.CommandText = query;
+                        cmd.CommandType = System.Data.CommandType.Text;
+                        cmd.Connection = cs;
+                        cs.Open();
+
+                        reader = cmd.ExecuteReader();
+
+                        if (reader.HasRows) {
+                            if (!reader.Read()) {
+                                throw new System.Exception("Problem reading results.");
+                            }
+                            entry.setIssueDate(reader.GetString(0));
+                        }
+                        else {
+                            throw new System.Exception("Couldn't read data from Database or results were empty.");
+                        }
+                        cnt++;
+                    }
+                    catch (Exception eIDate) {
+                        MessageBox.Show("Couldn't fetch missing issue date for " + currPol + "\n" + eIDate.ToString());
+                    }
+                    finally {
+                        cs.Close();
+                    }
+                }
+            }
+            return cnt;
         }
 
         public static CLineLife getCLineLife(string s) {
@@ -422,7 +468,6 @@ namespace NacCleaner {
 
             cl = new CLineLife(name, policyNum, type, plan, accDate, dueDate, mopd, premium, cRate, split, comm);
             return cl;
-        }
-
+        } 
     }
 }

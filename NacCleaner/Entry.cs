@@ -140,6 +140,9 @@ namespace NacCleaner {
             return CLineLifes[0].accDate;
         }
 
+        public void setIssueDate(string date) {
+            CLineLifes[0].accDate = date;
+        }
 
         /**
          * @return the name
