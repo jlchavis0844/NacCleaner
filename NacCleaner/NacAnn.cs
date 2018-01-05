@@ -96,16 +96,37 @@ namespace NacCleaner {
                             owner = pdfLines[i].Replace("Owner Name: ", "").Replace(" Writing Agent:", "");
                             commLines.Add(new CommLine(owner, polNum, issueDate, prem, rate, comm, "100", plan));
                             continue;
-                        }
-                        else {
+                        } else {
+                            DateTime temp;
+                            //issue date will be dropped sometimes, let's find and use the next date
+                            if (!DateTime.TryParse(tokens[0], out temp)) {
+                                int fNum = i + 1;
+                                while (issueDate == "") {
+                                    string[] tTokens = pdfLines[fNum].Split(' ');
+                                    foreach (string item in tTokens) {
+                                        if (DateTime.TryParse(item, out temp)) {
+                                            issueDate = item;
+                                            break;
+                                        }
+                                    }
+                                    fNum++;
+                                }
+
+                                prem = tokens[0];
+                                rate = tokens[1];
+                                comm = tokens[2];
+                                commLines.Add(new CommLine(owner, polNum, issueDate, prem, rate, comm, "100", plan));
+                                continue;
+                            }
+
                             issueDate = tokens[0];
                             prem = tokens[1];
                             rate = tokens[2];
                             comm = tokens[3];
                             i++;
                         }
-                    }
-                    else {
+                    } else {
+
                         DateTime temp;
 
                         int cntr = 1;
