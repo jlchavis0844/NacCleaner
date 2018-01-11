@@ -7,6 +7,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Globalization;
 
 namespace NacCleaner {
     internal class NacAnn {
@@ -15,11 +16,12 @@ namespace NacCleaner {
         static Microsoft.Office.Interop.Excel._Worksheet oSheet;
         static Microsoft.Office.Interop.Excel.Range oRng;
         static object misvalue = System.Reflection.Missing.Value;
-        static List<string> pdfLines = new List<string>();
+        static List<string> pdfLines;
         static string fileName = "";
         static List<CommLine> commLines;
 
         public NacAnn(string inFile) {
+            pdfLines = new List<string>();
             commLines = new List<CommLine>();
             fileName = System.IO.Path.GetFileName(inFile);
             try {
@@ -68,6 +70,25 @@ namespace NacCleaner {
 
                     //check for run on first line like : 8000276810 NA IncomeChoice 10 03/07/2016 $600.00 0.50% $3.00
                     if (tokens.Length < 7) {
+                        //check for missing plan name by assuming line like "8000328389 01/09/2018 $167,006.25 2.50% $4,175.16" 
+                        DateTime mpTemp;
+
+                        if (DateTime.TryParse(tokens[1], out mpTemp)) {
+                            plan = "MISSING PLAN NAME";
+                            issueDate = tokens[1];
+                            prem = tokens[2];
+                            rate = tokens[3];
+                            comm = tokens[4];
+                            i++;
+                            owner = pdfLines[i].Replace("Owner Name: ","").Replace("Writing Agent:","");
+                            i += 2;
+                            agent = pdfLines[i];
+
+                            commLines.Add(new CommLine(owner, polNum, issueDate, prem, rate, comm, "100", plan));
+                            continue;
+
+                        }
+
                         for (int j = 1; j < tokens.Length; j++) {
                             plan += " " + tokens[j];
                         }
@@ -156,20 +177,21 @@ namespace NacCleaner {
                         agent = "Skipped Agent";
                         i--;
                     }
-
                     commLines.Add(new CommLine(owner, polNum, issueDate, prem, rate, comm, "100", plan));
                 }
             }
-
             commLines.RemoveAll(c => c.comm == 0);
 
-            string pdfTotal = pdfLines.Find(e => e.StartsWith("EFT Amount")).Replace("EFT Amount", "").Replace("$", "").Trim();
+            string pdfTotal = pdfLines.Find(e => e.StartsWith("EFT Amount")).Replace("EFT Amount", "").Trim();
             double commTotal = commLines.Sum(e => e.comm);
+            string cTotal = commTotal.ToString("C", CultureInfo.CurrentCulture);
 
-            if (commTotal != Convert.ToDouble(pdfTotal)) {
-                MessageBox.Show("Warning, PDF total doesn't match commission total", "WARNING: TOTALS DON'T MATCH", MessageBoxButtons.OK);
+            if (cTotal != pdfTotal) {
+                string message = "Warning, PDF total doesn't match commission total\n";
+                message += "PDF total = " + pdfTotal + "\n";
+                message += "calculated total = " + cTotal + "\n";
+                MessageBox.Show(message, "WARNING: TOTALS DON'T MATCH", MessageBoxButtons.OK);
             }
-            
             CheckIssueDates();
             writeToExcel();
         }
@@ -241,7 +263,6 @@ namespace NacCleaner {
         }
 
         public static string GetSavePath() {
-
             SaveFileDialog saveFileDialog1 = new SaveFileDialog();
             //saveFileDialog1.InitialDirectory = "H:\\Desktop\\";
             saveFileDialog1.Filter = "xls|*.xls";

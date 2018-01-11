@@ -11,20 +11,20 @@ using System.Windows.Forms;
 namespace NacCleaner {
     internal class NacLife {
 
-        static string fileName = "";
-        static List<string> pages;
-        static List<Entry> entries;
-        static Microsoft.Office.Interop.Excel.Application oXL;
-        static Microsoft.Office.Interop.Excel._Workbook oWB;
-        static Microsoft.Office.Interop.Excel._Worksheet oSheet;
-        static Microsoft.Office.Interop.Excel.Range oRng;
-        static object misvalue = System.Reflection.Missing.Value;
-        static List<string> pdfLines = new List<string>();
-        static int pageNum = 0;
-        static int lineNum = 0;
+        string fileName = "";
+        public List<string> pages;
+        public List<Entry> entries;
+        public Microsoft.Office.Interop.Excel.Application oXL;
+        public Microsoft.Office.Interop.Excel._Workbook oWB;
+        public Microsoft.Office.Interop.Excel._Worksheet oSheet;
+        public Microsoft.Office.Interop.Excel.Range oRng;
+        public object misvalue = System.Reflection.Missing.Value;
+        public List<string> pdfLines;
+        public int pageNum = 0;
+        public int lineNum = 0;
         
         public NacLife(string inFile) {
-
+            pdfLines = new List<string>();
             pages = new List<string>();
             entries = new List<Entry>();
             fileName = System.IO.Path.GetFileName(inFile);
@@ -139,7 +139,7 @@ namespace NacCleaner {
             }
         }
 
-        public static ALineLife getALineLife(String s) {
+        public ALineLife getALineLife(String s) {
             ALineLife al = null;
             String[] tokens = null;
             String name = "";
@@ -230,7 +230,7 @@ namespace NacCleaner {
         }
 
 
-        public static void writeToExcel() {
+        public void writeToExcel() {
             string outFile = "";
             try {
                 //Start Excel and get Application object.
@@ -296,7 +296,7 @@ namespace NacCleaner {
             }
         }
 
-        public static string GetSavePath() {
+        public string GetSavePath() {
 
             System.Windows.Forms.SaveFileDialog saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             saveFileDialog1.InitialDirectory = "H:\\Desktop\\";
@@ -312,7 +312,7 @@ namespace NacCleaner {
             return "";
         }
 
-        public static int CheckIssueDates() {
+        public int CheckIssueDates() {
             int cnt = 0;
             SqlConnection cs = new SqlConnection("Data Source=RALIMSQL1\\RALIM1; " +
                 "Initial Catalog = CAMSRALFG; " +
@@ -358,7 +358,7 @@ namespace NacCleaner {
             return cnt;
         }
 
-        public static CLineLife getCLineLife(string s) {
+        public CLineLife getCLineLife(string s) {
             CLineLife cl = null;
 
             string[] lines = s.Split('\n');

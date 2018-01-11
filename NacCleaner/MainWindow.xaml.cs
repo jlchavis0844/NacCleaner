@@ -1,14 +1,6 @@
-﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Forms;
 
 namespace NacCleaner {
     /// <summary>
@@ -37,7 +29,8 @@ namespace NacCleaner {
 
         private void btnLoad_On_Click(object sender, RoutedEventArgs e) {
             System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
-            ofd.InitialDirectory = "P:\\RALFG\\Common Files\\Commissions & Insurance\\Commission Statements\\2017\\";
+            ofd.InitialDirectory = "P:\\RALFG\\Common Files\\Commissions & Insurance\\Commission Statements\\" +
+                DateTime.Now.Year.ToString() + "\\";
             ofd.Filter = "PDF files (*.pdf)|*.pdf";
             ofd.FilterIndex = 1;
             ofd.RestoreDirectory = true;
