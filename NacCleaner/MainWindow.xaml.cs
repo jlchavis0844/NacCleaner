@@ -31,7 +31,11 @@ namespace NacCleaner {
             System.Windows.Forms.OpenFileDialog ofd = new System.Windows.Forms.OpenFileDialog();
             ofd.InitialDirectory = "P:\\RALFG\\Common Files\\Commissions & Insurance\\Commission Statements\\" +
                 DateTime.Now.Year.ToString() + "\\";
-            ofd.Filter = "PDF files (*.pdf)|*.pdf";
+            if (cbType.SelectedValue.ToString().Contains("Life")) {
+                ofd.Filter = "XLS files (*.xls)|*.xls";
+            } else {
+                ofd.Filter = "PDF files (*.pdf)|*.pdf";
+            }
             ofd.FilterIndex = 1;
             ofd.RestoreDirectory = true;
             System.Windows.Forms.DialogResult result = ofd.ShowDialog();
@@ -55,7 +59,7 @@ namespace NacCleaner {
             } else {
                 if(cbType.SelectedValue.ToString() == LIFE) {
                     lblStatus.Content = "Starting NACOLAH Life clean";
-                    new NacLife(filePath);
+                    new NacLifeXLS(filePath);
                     lblStatus.Content = lblStatus.Content + "...Done";
                 } else {
                     lblStatus.Content = "Starting NACOLAH Annuity clean";

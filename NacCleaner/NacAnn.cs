@@ -264,10 +264,9 @@ namespace NacCleaner {
 
         public static string GetSavePath() {
             SaveFileDialog saveFileDialog1 = new SaveFileDialog();
-            //saveFileDialog1.InitialDirectory = "H:\\Desktop\\";
+            saveFileDialog1.InitialDirectory = "H:\\Desktop\\";
             saveFileDialog1.Filter = "xls|*.xls";
             saveFileDialog1.FilterIndex = 2;
-            saveFileDialog1.RestoreDirectory = true;
             saveFileDialog1.FileName = fileName.Replace(".pdf", "_out");
 
             if (saveFileDialog1.ShowDialog() == DialogResult.OK) {
