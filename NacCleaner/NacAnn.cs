@@ -51,22 +51,25 @@ namespace NacCleaner {
             pdfLines.RemoveAll(item => item.Length < 1);
 
             for (int i = 0; i < pdfLines.Count; i++) {
-                string polNum = "";
-                string plan = "";
-                string issueDate = "";
-                string prem = "";
-                string rate = "";
-                string comm = "";
-                string meth = "";
-                string tDate = "";
-                string owner = "";
-                string agent = "";
-                string commOpt = "";
-
                 if (pdfLines[i].StartsWith("8000")) {
+                    int start = i;
+                    string polNum = "";
+                    string plan = "";
+                    string issueDate = "";
+                    string prem = "";
+                    string rate = "";
+                    string comm = "";
+                    string meth = "";
+                    string tDate = "";
+                    string owner = "";
+                    string agent = "";
+                    string commOpt = "";
+                    string split = "100";
                     string[] tokens = pdfLines[i].Split(' ');
 
                     polNum = tokens[0];
+                    if(polNum == "8000132254")
+                        Console.WriteLine(polNum);
 
                     //check for run on first line like : 8000276810 NA IncomeChoice 10 03/07/2016 $600.00 0.50% $3.00
                     if (tokens.Length < 7) {
@@ -84,7 +87,8 @@ namespace NacCleaner {
                             i += 2;
                             agent = pdfLines[i];
 
-                            commLines.Add(new CommLine(owner, polNum, issueDate, prem, rate, comm, "100", plan));
+                            commLines.Add(new CommLine(owner, polNum, issueDate, prem, rate, comm, split, plan));
+                            i = start;
                             continue;
 
                         }
@@ -115,7 +119,8 @@ namespace NacCleaner {
                             agent = pdfLines[i].Trim();
                             i += 2;
                             owner = pdfLines[i].Replace("Owner Name: ", "").Replace(" Writing Agent:", "");
-                            commLines.Add(new CommLine(owner, polNum, issueDate, prem, rate, comm, "100", plan));
+                            commLines.Add(new CommLine(owner, polNum, issueDate, prem, rate, comm, split, plan));
+                            i = start;
                             continue;
                         } else {
                             DateTime temp;
@@ -136,7 +141,8 @@ namespace NacCleaner {
                                 prem = tokens[0];
                                 rate = tokens[1];
                                 comm = tokens[2];
-                                commLines.Add(new CommLine(owner, polNum, issueDate, prem, rate, comm, "100", plan));
+                                commLines.Add(new CommLine(owner, polNum, issueDate, prem, rate, comm, split, plan));
+                                i = start;
                                 continue;
                             }
 
@@ -173,13 +179,24 @@ namespace NacCleaner {
 
 
                     agent = pdfLines[i];
+                    tokens = pdfLines[i].Split(' ');
+                    string tempSplit = tokens[tokens.Length - 1].Trim();
+
+                    if (tempSplit.EndsWith("%")) {
+                        double splitNum = Convert.ToDouble(tempSplit.Replace("%", ""));
+
+                        if (splitNum < 100)
+                            split = splitNum.ToString();
+                    }
                     if (agent.StartsWith("8000")) {
                         agent = "Skipped Agent";
                         i--;
                     }
-                    commLines.Add(new CommLine(owner, polNum, issueDate, prem, rate, comm, "100", plan));
+                    commLines.Add(new CommLine(owner, polNum, issueDate, prem, rate, comm, split, plan));
+                    i = start;
                 }
             }
+            int rawCount = commLines.Count;
             commLines.RemoveAll(c => c.comm == 0);
 
             string pdfTotal = pdfLines.Find(e => e.StartsWith("EFT Amount")).Replace("EFT Amount", "").Trim();
@@ -190,6 +207,7 @@ namespace NacCleaner {
                 string message = "Warning, PDF total doesn't match commission total\n";
                 message += "PDF total = " + pdfTotal + "\n";
                 message += "calculated total = " + cTotal + "\n";
+                message += "processed comm lines: " + rawCount + " of which " + commLines.Count + " were kept";
                 MessageBox.Show(message, "WARNING: TOTALS DON'T MATCH", MessageBoxButtons.OK);
             }
             CheckIssueDates();
