@@ -8,7 +8,6 @@ using System.Windows.Forms;
 
 namespace NacCleaner {
     internal class NacLifeXLS {
-        private string filePath;
         public const int COMM = 0;
         public const int ANN = 1; 
         public Microsoft.Office.Interop.Excel.Application oXL;
@@ -33,11 +32,9 @@ namespace NacCleaner {
             foreach (DataRow row in table.Rows) {
                 if (row[12].ToString() == "") {
                     delRows.Add(row);
-                }
-                else if (row[14].ToString() == "") {
+                } else if (row.ItemArray.Count() < 15 || row[14].ToString() == "") {
                     commRows.Add(row);
-                }
-                else {
+                } else {
                     advRows.Add(row);
                 }
             }

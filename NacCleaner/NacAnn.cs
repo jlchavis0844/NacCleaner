@@ -8,6 +8,8 @@ using System.Windows.Forms;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Globalization;
+using System.Data;
+
 
 namespace NacCleaner {
     internal class NacAnn {
@@ -46,6 +48,19 @@ namespace NacCleaner {
             catch (Exception ex) {
                 MessageBox.Show("Error: " + ex.Message, "Error");
             }
+            //int polCount = (from myLine in pdfLines
+            //                where myLine.Split(' ')[0].StartsWith("8000")
+            //                select myLine).Count();
+            int polCnt = 0;
+            foreach(string line in pdfLines) {
+                foreach(string token in line.Split(' ')) {
+                    if (token.StartsWith("8000")) {
+                        polCnt++;
+                    }
+                }
+            }
+
+
             pdfLines.RemoveAll(item => item.StartsWith("3R"));
             pdfLines.RemoveAll(item => item.Trim().StartsWith("Page "));
             pdfLines.RemoveAll(item => item.Length < 1);
@@ -68,8 +83,8 @@ namespace NacCleaner {
                     string[] tokens = pdfLines[i].Split(' ');
 
                     polNum = tokens[0];
-                    if(polNum == "8000132254")
-                        Console.WriteLine(polNum);
+                    //if(polNum == "8000132254")
+                    //    Console.WriteLine(polNum);
 
                     //check for run on first line like : 8000276810 NA IncomeChoice 10 03/07/2016 $600.00 0.50% $3.00
                     if (tokens.Length < 7) {
@@ -206,8 +221,9 @@ namespace NacCleaner {
             if (cTotal != pdfTotal) {
                 string message = "Warning, PDF total doesn't match commission total\n";
                 message += "PDF total = " + pdfTotal + "\n";
-                message += "calculated total = " + cTotal + "\n";
-                message += "processed comm lines: " + rawCount + " of which " + commLines.Count + " were kept";
+                message += "Calculated total = " + cTotal + "\n";
+                message += "Processed comm lines: " + rawCount + " of which " + commLines.Count + " were kept\n";
+                message += "Found a total of " + polCnt + " policy numbers on PDF";
                 MessageBox.Show(message, "WARNING: TOTALS DON'T MATCH", MessageBoxButtons.OK);
             }
             CheckIssueDates();
