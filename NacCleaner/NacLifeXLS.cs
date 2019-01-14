@@ -32,7 +32,8 @@ namespace NacCleaner {
             foreach (DataRow row in table.Rows) {
                 if (row[12].ToString() == "") {
                     delRows.Add(row);
-                } else if (row.ItemArray.Count() < 15 || row[14].ToString() == "") {
+                } // if there are no ann lines, column 15 (row[14]) will not exist.
+                else if (row.ItemArray.Count() < 16 || row[15].ToString() == "") {
                     commRows.Add(row);
                 } else {
                     advRows.Add(row);
@@ -64,26 +65,26 @@ namespace NacCleaner {
                 newRow = newTable.NewRow();
                 newRow["Policy"] = commRows[i][0];
                 newRow["Fullname"] = commRows[i][1];
-                newRow["Sfx Prod"] = commRows[i][4];
-                newRow["Premium"] = commRows[i][7];
+                newRow["Sfx Prod"] = commRows[i][5];
+                newRow["Premium"] = commRows[i][8];
                 DateTime tDates;
-                DateTime.TryParse(commRows[i][6].ToString(), out tDates);
+                DateTime.TryParse(commRows[i][7].ToString(), out tDates);
                 newRow["mmyy"] = tDates.ToShortDateString();
-                newRow["Rate %"] = (double)commRows[i][11] * 100;
-                newRow["Rate"] = commRows[i][12];
+                newRow["Rate %"] = (double)commRows[i][12] * 100;
+                newRow["Rate"] = commRows[i][13];
                 newRow["Rate2"] = "";
-                string code = commRows[i][8].ToString().Trim();
+                string code = commRows[i][9].ToString().Trim();
                 newRow["Code"] = code;
 
                 if (code == "Renewal") {
                     newRow["Commission"] = 0;
-                    newRow["Renewal"] = commRows[i][13];
+                    newRow["Renewal"] = commRows[i][14];
                 }
                 else {
                     newRow["Renewal"] = 0;
-                    newRow["Commission"] = commRows[i][13];
+                    newRow["Commission"] = commRows[i][14];
                 }
-                DateTime.TryParse(commRows[i][5].ToString(), out tDates);
+                DateTime.TryParse(commRows[i][6].ToString(), out tDates);
                 newRow["Issue Date"] = tDates.ToShortDateString();
                 newRow["processed"] = false;
                 //newRow["type"] = COMM;

@@ -188,8 +188,17 @@ namespace NacCleaner {
 
                     tokens = pdfLines[i].Split(' ');
                     tDate = tokens[0];
-                    meth = tokens[2];
-                    commOpt = tokens[3];
+                    if(tokens.Length > 2) {
+                        meth = tokens[2];
+                    } else {
+                        meth = "";
+                    }
+
+                    if (tokens.Length > 3) {
+                        commOpt = tokens[3];
+                    } else {
+                        commOpt = "";
+                    }
                     i++;
 
 
@@ -215,12 +224,17 @@ namespace NacCleaner {
             commLines.RemoveAll(c => c.comm == 0);
 
             string pdfTotal = pdfLines.Find(e => e.StartsWith("EFT Amount")).Replace("EFT Amount", "").Trim();
+            string currEarn = pdfLines.Find(e => e.StartsWith("Current Earnings")).Replace("Current Earnings", "").Trim();
+            string balance = pdfLines.Find(e => e.StartsWith("Beginning Balance")).Replace("Beginning Balance", "").Trim();
+
             double commTotal = commLines.Sum(e => e.comm);
             string cTotal = commTotal.ToString("C", CultureInfo.CurrentCulture);
 
             if (cTotal != pdfTotal) {
-                string message = "Warning, PDF total doesn't match commission total\n";
-                message += "PDF total = " + pdfTotal + "\n";
+                string message = "Warning, EFT Amount doesn't match computed total (usually a balance)\n";
+                message += "EFT Amount = " + pdfTotal + "\n";
+                message += "Beginning Balance = " + balance + "\n";
+                message += "Current Earnings = " + currEarn + "\n";
                 message += "Calculated total = " + cTotal + "\n";
                 message += "Processed comm lines: " + rawCount + " of which " + commLines.Count + " were kept\n";
                 message += "Found a total of " + polCnt + " policy numbers on PDF";
